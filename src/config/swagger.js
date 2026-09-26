@@ -1,6 +1,17 @@
 const swaggerJsdoc = require('swagger-jsdoc');
+const path = require('path');
+const fs = require('fs');
 
-module.exports = swaggerJsdoc({
+const routesDir = path.join(__dirname, '..', 'routes');
+
+const routeFiles = fs
+  .readdirSync(routesDir)
+  .filter((f) => f.endsWith('.js'))
+  .map((f) => path.join(routesDir, f));
+
+console.log('📄 Route files loaded:', routeFiles);
+
+const options = {
   definition: {
     openapi: '3.0.0',
     info: {
@@ -8,12 +19,24 @@ module.exports = swaggerJsdoc({
       version: '1.0.0',
       description: 'Intermediate-level backend',
     },
-    servers: [{ url: 'http://localhost:5000' }],
+    servers: [
+      {
+        url:
+          process.env.NODE_ENV === 'production'
+            ? 'https://shadowfox-leveltwo.onrender.com'
+            : `http://localhost:${process.env.PORT || 5000}`,
+      },
+    ],
     components: {
       securitySchemes: {
         bearerAuth: { type: 'http', scheme: 'bearer', bearerFormat: 'JWT' },
       },
     },
   },
-  apis: ['./src/routes/*.js'],
-});
+  apis: routeFiles,
+};
+
+const spec = swaggerJsdoc(options);
+console.log('📖 paths found:', Object.keys(spec.paths || {}));
+
+module.exports = spec;
