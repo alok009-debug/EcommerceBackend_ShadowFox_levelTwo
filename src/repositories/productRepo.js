@@ -10,7 +10,7 @@ const create = async (data) => {
       data.price,
       data.stock,
       data.categoryId,
-      JSON.stringify(data.images || []),
+      JSON.stringify(data.images || []),   // ← this line
     ]
   );
   return findById(result.insertId);
